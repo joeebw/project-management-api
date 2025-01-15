@@ -1,6 +1,6 @@
 import boom from "@hapi/boom";
 import Task from "../models/Task.js";
-import { Op, where } from "sequelize";
+import { Op } from "sequelize";
 
 export const getTasks = async (req, res) => {
   try {
@@ -18,8 +18,7 @@ export const getTasks = async (req, res) => {
 
 export const getMyTasks = async (req, res) => {
   try {
-    const { id } = req.query;
-    console.log("id assigned", id);
+    const { id } = req.user;
     const tasks = await Task.findAll({
       where: {
         assignees: {
@@ -126,5 +125,34 @@ export const updateTask = async (req, res) => {
   } catch (error) {
     const boomError = boom.badRequest(error);
     res.status(boomError.output.statusCode).json(boomError.output.payload);
+  }
+};
+
+export const searchTasks = async (req, res) => {
+  try {
+    const { query, id } = req.query;
+    const tasks = await Task.findAll({
+      where: {
+        ProjectId: id,
+        [Op.or]: [
+          {
+            title: {
+              [Op.iLike]: `%${query}%`,
+            },
+          },
+          {
+            description: {
+              [Op.iLike]: `%${query}%`,
+            },
+          },
+        ],
+      },
+    });
+    res.status(200).json(tasks);
+    console.log("Tasks fetched successfully");
+  } catch (error) {
+    const boomError = boom.badRequest(error);
+    res.status(boomError.output.statusCode).json(boomError.output.payload);
+    console.error(error);
   }
 };

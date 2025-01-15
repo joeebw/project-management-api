@@ -14,6 +14,14 @@ const Project = sequelize.define("Project", {
   description: {
     type: DataTypes.TEXT,
   },
+  startDate: {
+    type: DataTypes.DATE,
+    allowNull: false,
+  },
+  endDate: {
+    type: DataTypes.DATE,
+    allowNull: false,
+  },
 });
 
 export default Project;

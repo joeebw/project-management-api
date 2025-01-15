@@ -20,9 +20,22 @@ const User = sequelize.define(
     password: {
       type: DataTypes.STRING,
       allowNull: false,
+      validate: {
+        len: {
+          args: [8, 100],
+          msg: "Password must be at least 8 characters long",
+        },
+      },
     },
     userName: {
       type: DataTypes.STRING,
+    },
+    team: {
+      type: DataTypes.STRING,
+    },
+    role: {
+      type: DataTypes.STRING,
+      allowNull: false,
     },
   },
   {

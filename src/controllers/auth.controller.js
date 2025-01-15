@@ -6,7 +6,7 @@ import RefreshToken from "../models/RefreshToken.js";
 
 export const register = async (req, res) => {
   try {
-    const { email, password, userName } = req.body;
+    const { email, password, userName, role } = req.body;
 
     const existingUser = await User.findOne({ where: { email } });
     if (existingUser) {
@@ -22,6 +22,7 @@ export const register = async (req, res) => {
       email,
       userName,
       password: hashedPassword,
+      role,
     });
 
     const { accessToken, refreshToken } = generateTokens(user.id);
@@ -56,7 +57,7 @@ export const signIn = async (req, res) => {
 
     const user = await User.findOne({ where: { email } });
     if (!user) {
-      const boomError = boom.unauthorized("Invalid email or password");
+      const boomError = boom.badRequest("Invalid email or password");
       return res
         .status(boomError.output.statusCode)
         .json(boomError.output.payload);
@@ -64,7 +65,7 @@ export const signIn = async (req, res) => {
 
     const validPadssword = await bcrypt.compare(password, user.password);
     if (!validPadssword) {
-      const boomError = boom.unauthorized("Invalid email or password");
+      const boomError = boom.badRequest("Invalid email or password");
       return res
         .status(boomError.output.statusCode)
         .json(boomError.output.payload);

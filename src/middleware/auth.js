@@ -1,4 +1,5 @@
-import { verifyAccessToken } from "../utils/jwt";
+import { verifyAccessToken } from "../utils/jwt.js";
+import boom from "@hapi/boom";
 
 export const authenticateToken = async (req, res, next) => {
   try {
@@ -13,6 +14,9 @@ export const authenticateToken = async (req, res, next) => {
     req.user = decoded;
     next();
   } catch (error) {
-    return res.status(403).json({ message: "Invalid token" });
+    const boomError = boom.badRequest(error);
+    return res
+      .status(boomError.output.statusCode)
+      .json(boomError.output.payload);
   }
 };
