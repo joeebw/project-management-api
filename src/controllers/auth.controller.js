@@ -105,7 +105,7 @@ export const refresh = async (req, res) => {
     const tokenDoc = await RefreshToken.findOne({
       where: {
         token: refreshToken,
-        UserId: decoded.userId,
+        UserId: decoded.id,
       },
     });
 

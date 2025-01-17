@@ -14,7 +14,7 @@ export const authenticateToken = async (req, res, next) => {
     req.user = decoded;
     next();
   } catch (error) {
-    const boomError = boom.badRequest(error);
+    const boomError = boom.unauthorized(error);
     return res
       .status(boomError.output.statusCode)
       .json(boomError.output.payload);

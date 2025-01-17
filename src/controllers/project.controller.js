@@ -4,7 +4,8 @@ import Project from "../models/Project.js";
 export const getProjects = async (req, res) => {
   try {
     const projects = await Project.findAll();
-    res.json(projects);
+    const formmatedProjects = projects.map(({ id, name }) => ({ id, name }));
+    res.json(formmatedProjects);
   } catch (error) {
     const boomError = boom.badImplementation(error);
     res.status(boomError.output.statusCode).json(boomError.output.payload);
