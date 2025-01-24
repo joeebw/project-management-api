@@ -15,9 +15,13 @@ const Task = sequelize.define("Task", {
   description: {
     type: DataTypes.TEXT,
   },
-  due_date: {
+  start_date: {
     type: DataTypes.DATE,
     defaultValue: DataTypes.NOW,
+  },
+  end_date: {
+    type: DataTypes.DATE,
+    allowNull: true,
   },
   status: {
     type: DataTypes.ENUM(
@@ -29,11 +33,7 @@ const Task = sequelize.define("Task", {
     defaultValue: "to_do",
   },
   tags: {
-    type: DataTypes.ARRAY(DataTypes.STRING),
-    defaultValue: [],
-  },
-  comments: {
-    type: DataTypes.JSONB,
+    type: DataTypes.ARRAY(DataTypes.JSONB),
     defaultValue: [],
   },
   assignees: {
@@ -48,5 +48,4 @@ const Task = sequelize.define("Task", {
 
 Task.belongsTo(Project);
 Project.hasMany(Task);
-
 export default Task;
