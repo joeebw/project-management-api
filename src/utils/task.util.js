@@ -25,6 +25,7 @@ export const getFormmatedTasks = (tasks, users) => {
         const user = users.find((user) => user.id === assigneeId);
         return user.userName;
       }),
+      priority: task.priority,
     };
 
     if (!acc[status]) {
@@ -37,7 +38,7 @@ export const getFormmatedTasks = (tasks, users) => {
   }, {});
 };
 
-export const normaliceStatusFormatting = (updates) => {
+export const normaliceStatusFormatting = (status) => {
   const statusMap = {
     todo: "to_do",
     "in-progress": "work_in_progress",
@@ -45,5 +46,5 @@ export const normaliceStatusFormatting = (updates) => {
     completed: "completed",
   };
 
-  updates.status = statusMap[updates.status];
+  return statusMap[status];
 };

@@ -19,6 +19,7 @@ export const createProject = async (req, res) => {
       name,
       description,
     });
+    console.log("Project created successfully");
     res.status(201).json(project);
   } catch (error) {
     const boomError = boom.badRequest(error);

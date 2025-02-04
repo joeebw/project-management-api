@@ -78,20 +78,24 @@ export const createTask = async (req, res) => {
     const {
       title,
       description,
-      dueDate,
-      assignees,
-      ProjectId,
+      startDate,
+      endDate,
+      assignedUserIds,
+      projectId,
+      tags,
       status,
       priority,
     } = req.body;
+    console.log(normaliceStatusFormatting(status));
     const task = await Task.create({
       title,
       description,
-      due_date: dueDate,
-      assignees,
-      ProjectId,
-      status: status,
-      tags: [],
+      start_date: startDate,
+      end_date: endDate,
+      assignees: assignedUserIds,
+      ProjectId: projectId,
+      status: normaliceStatusFormatting(status),
+      tags: tags,
       priority,
     });
     res.status(201).json(task);
@@ -134,7 +138,7 @@ export const updateTask = async (req, res) => {
     }
 
     if (updates.status) {
-      normaliceStatusFormatting(updates);
+      updates.status = normaliceStatusFormatting(updates.status);
     }
 
     console.log("updates: ", updates);
@@ -149,13 +153,22 @@ export const updateTask = async (req, res) => {
 
 export const addComment = async (req, res) => {
   try {
-    const { comment, userId, taskId } = req.body;
-    await Comment.create({
+    const { id: userId } = req.user;
+    const { comment, taskId } = req.body;
+
+    const user = await User.findByPk(userId);
+
+    const newComment = await Comment.create({
       text: comment,
       UserId: userId,
       TaskId: taskId,
     });
-    res.status(200).json({ message: "Comment added successfully" });
+
+    res.status(200).json({
+      id: newComment.id,
+      text: newComment.text,
+      userName: user.userName,
+    });
   } catch (error) {
     const boomError = boom.badRequest(error);
     res.status(boomError.output.statusCode).json(boomError.output.payload);
@@ -174,7 +187,7 @@ export const getTaskComments = async (req, res) => {
           attributes: ["userName"],
         },
       ],
-      order: [["createdAt", "DESC"]],
+      order: [["createdAt", "ASC"]],
     });
 
     const formattedComments = comments.map((comment) => ({
@@ -203,6 +216,7 @@ export const removeComment = async (req, res) => {
     }
 
     await Comment.destroy({ where: { id } });
+
     res.status(200).json({ message: "Comment removed" });
   } catch (error) {
     const boomError = boom.badRequest(error);

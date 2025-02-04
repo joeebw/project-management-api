@@ -116,7 +116,7 @@ export const refresh = async (req, res) => {
         .json(boomError.output.payload);
     }
 
-    const { accessToken: newAccesToken } = generateTokens(decoded.userId);
+    const { accessToken: newAccesToken } = generateTokens(decoded.id);
 
     res.status(201).json({
       accessToken: newAccesToken,
