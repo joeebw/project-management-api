@@ -1,4 +1,4 @@
-const formatDate = (timestamp) => {
+export const formatDate = (timestamp) => {
   const date = new Date(timestamp);
   return `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
 };
@@ -26,6 +26,7 @@ export const getFormmatedTasks = (tasks, users) => {
         return user.userName;
       }),
       priority: task.priority,
+      hasComments: task.hasComments,
     };
 
     if (!acc[status]) {
@@ -36,6 +37,16 @@ export const getFormmatedTasks = (tasks, users) => {
 
     return acc;
   }, {});
+};
+
+export const formatStatus = (status) => {
+  const statusMap = {
+    to_do: "todo",
+    work_in_progress: "in progress",
+    under_review: "under review",
+    completed: "completed",
+  };
+  return statusMap[status];
 };
 
 export const normaliceStatusFormatting = (status) => {

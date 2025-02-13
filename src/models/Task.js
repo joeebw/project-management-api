@@ -33,7 +33,7 @@ const Task = sequelize.define("Task", {
     defaultValue: "to_do",
   },
   tags: {
-    type: DataTypes.ARRAY(DataTypes.STRING), // Cambiado de JSON a ARRAY(STRING)
+    type: DataTypes.ARRAY(DataTypes.STRING),
     defaultValue: [],
     allowNull: true,
   },

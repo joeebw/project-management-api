@@ -3,8 +3,12 @@ import Project from "../models/Project.js";
 
 export const getProjects = async (req, res) => {
   try {
-    const projects = await Project.findAll();
-    const formmatedProjects = projects.map(({ id, name }) => ({ id, name }));
+    const projects = await Project.findAll({
+      order: [["startDate", "ASC"]],
+    });
+    const formmatedProjects = projects.map(
+      ({ id, name, startDate, endDate }) => ({ id, name, startDate, endDate })
+    );
     res.json(formmatedProjects);
   } catch (error) {
     const boomError = boom.badImplementation(error);
@@ -14,13 +18,15 @@ export const getProjects = async (req, res) => {
 
 export const createProject = async (req, res) => {
   try {
-    const { name, description } = req.body;
+    const { name, description, startDate, endDate } = req.body;
     const project = await Project.create({
       name,
       description,
+      startDate,
+      endDate,
     });
     console.log("Project created successfully");
-    res.status(201).json(project);
+    res.status(201).json({ id: project.id });
   } catch (error) {
     const boomError = boom.badRequest(error);
     res.status(boomError.output.statusCode).json(boomError.output.payload);

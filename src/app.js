@@ -39,4 +39,6 @@ const startServer = async () => {
   }
 };
 
+console.log("running app.js");
+
 startServer();

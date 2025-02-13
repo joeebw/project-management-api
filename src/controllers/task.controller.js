@@ -4,23 +4,82 @@ import { Op } from "sequelize";
 import Comment from "../models/Comment.js";
 import User from "../models/User.js";
 import {
+  formatDate,
+  formatStatus,
   getFormmatedTasks,
   normaliceStatusFormatting,
 } from "../utils/task.util.js";
+import sequelize from "../config/database.js";
+import Project from "../models/Project.js";
 
 export const getTasks = async (req, res) => {
   try {
-    const { id } = req.query;
-    const tasks = await Task.findAll({ where: { ProjectId: id } });
+    const { id, section = "board" } = req.query;
+
+    if (!id) {
+      const boomError = boom.badRequest("Project ID is required");
+      return res
+        .status(boomError.output.statusCode)
+        .json(boomError.output.payload);
+    }
+
+    const project = await Project.findByPk(id);
+    if (!project) {
+      const boomError = boom.notFound("Project not found");
+      return res
+        .status(boomError.output.statusCode)
+        .json(boomError.output.payload);
+    }
+
+    let tasks = await Task.findAll({ where: { ProjectId: id } });
+
+    const commentCounts = await Comment.findAll({
+      attributes: [
+        "TaskId",
+        [sequelize.fn("COUNT", sequelize.col("id")), "count"],
+      ],
+      group: ["TaskId"],
+      raw: true,
+    });
+
     const userIds = [...new Set(tasks.flatMap((task) => task.assignees))];
     const users = await User.findAll({
       where: { id: userIds },
       attributes: ["id", "userName"],
     });
 
-    const formattedTasks = getFormmatedTasks(tasks, users);
+    tasks = tasks.map((task) => ({
+      ...task.toJSON(),
+      hasComments: commentCounts.some((cc) => cc.TaskId === task.id),
+    }));
 
-    res.status(200).json(formattedTasks);
+    if (section === "board") {
+      tasks = getFormmatedTasks(tasks, users);
+    }
+
+    if (section === "list") {
+      tasks = tasks.map((task) => {
+        const assigneeNames = task.assignees.map((assigneeId) => {
+          const user = users.find((user) => user.id === assigneeId);
+          return user ? user.userName : "Unknown User";
+        });
+
+        return {
+          id: task.id,
+          title: task.title,
+          description: task.description,
+          status: formatStatus(task.status),
+          tags: task.tags,
+          startDate: formatDate(task.start_date),
+          endDate: formatDate(task.end_date),
+          assignees: assigneeNames,
+          priority: task.priority,
+          hasComments: task.hasComments,
+        };
+      });
+    }
+
+    res.status(200).json(tasks);
     console.log("Tasks fetched successfully");
   } catch (error) {
     const boomError = boom.badRequest(error);
@@ -40,7 +99,17 @@ export const getMyTasks = async (req, res) => {
       },
     });
 
-    res.status(200).json(tasks);
+    const tasksFormatted = tasks.map((task) => {
+      return {
+        id: task.id,
+        title: task.title,
+        status: formatStatus(task.status),
+        priority: task.priority,
+        endDate: formatDate(task.end_date),
+      };
+    });
+
+    res.status(200).json(tasksFormatted);
     console.log("Tasks fetched successfully");
   } catch (error) {
     const boomError = boom.badRequest(error);
@@ -52,8 +121,21 @@ export const getMyTasks = async (req, res) => {
 export const getTotalTasks = async (req, res) => {
   try {
     const { status = "completed" } = req.query;
-    const totalTasks = await Task.count({ where: { status } });
-    res.status(200).json({ totalTasks });
+    const completedTasks = await Task.count({ where: { status } });
+    const remainingTasks = await Task.count({
+      where: {
+        status: {
+          [Op.in]: ["to_do", "work_in_progress", "under_review"],
+        },
+      },
+    });
+
+    const result = [
+      { name: "completed", value: completedTasks },
+      { name: "remaining", value: remainingTasks },
+    ];
+
+    res.status(200).json(result);
   } catch (error) {
     const boomError = boom.badRequest(error);
     res.status(boomError.output.statusCode).json(boomError.output.payload);
@@ -63,9 +145,20 @@ export const getTotalTasks = async (req, res) => {
 
 export const getTasksPriorityCount = async (req, res) => {
   try {
-    const { priority } = req.query;
-    const totalTasks = await Task.count({ where: { priority } });
-    res.status(200).json({ totalTasks });
+    const taskCounts = await Task.findAll({
+      attributes: [
+        "priority",
+        [sequelize.fn("COUNT", sequelize.col("id")), "count"],
+      ],
+      group: ["priority"],
+      raw: true,
+    });
+
+    const result = taskCounts.map((item) => {
+      return { name: item.priority, value: parseInt(item.count) };
+    });
+
+    res.status(200).json(result);
   } catch (error) {
     const boomError = boom.badRequest(error);
     res.status(boomError.output.statusCode).json(boomError.output.payload);

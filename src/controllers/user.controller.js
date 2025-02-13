@@ -2,6 +2,22 @@ import RefreshToken from "../models/RefreshToken.js";
 import User from "../models/User.js";
 import boom from "@hapi/boom";
 
+export const getUser = async (req, res) => {
+  try {
+    const { id } = req.user;
+    const user = await User.findByPk(id);
+    res.status(200).json({
+      email: user.email,
+      userName: user.userName,
+      role: user.role,
+    });
+  } catch (error) {
+    const boomError = boom.badRequest(error);
+    res.status(boomError.output.statusCode).json(boomError.output.payload);
+    console.error(error);
+  }
+};
+
 export const updateUserProfile = async (req, res) => {
   try {
     const { id } = req.user;
@@ -29,6 +45,7 @@ export const getAllUsers = async (req, res) => {
       return {
         id,
         userName,
+        profilePicture: userName,
       };
     });
     res.status(200).json(formmatedUsers);
