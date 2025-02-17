@@ -1,5 +1,7 @@
 import boom from "@hapi/boom";
 import Project from "../models/Project.js";
+import { formatDateForSQLite } from "../utils/date.util.js";
+import { formatDateForProject } from "../utils/task.util.js";
 
 export const getProjects = async (req, res) => {
   try {
@@ -7,7 +9,12 @@ export const getProjects = async (req, res) => {
       order: [["startDate", "ASC"]],
     });
     const formmatedProjects = projects.map(
-      ({ id, name, startDate, endDate }) => ({ id, name, startDate, endDate })
+      ({ id, name, startDate, endDate }) => ({
+        id,
+        name,
+        startDate: formatDateForProject(startDate),
+        endDate: formatDateForProject(endDate),
+      })
     );
     res.json(formmatedProjects);
   } catch (error) {
@@ -22,8 +29,8 @@ export const createProject = async (req, res) => {
     const project = await Project.create({
       name,
       description,
-      startDate,
-      endDate,
+      startDate: formatDateForSQLite(startDate),
+      endDate: formatDateForSQLite(endDate),
     });
     console.log("Project created successfully");
     res.status(201).json({ id: project.id });
@@ -55,6 +62,14 @@ export const updateProject = async (req, res) => {
   try {
     const { id } = req.query;
     const updates = req.body;
+
+    if (updates.startDate) {
+      updates.startDate = formatDateForSQLite(updates.startDate);
+    }
+    if (updates.endDate) {
+      updates.endDate = formatDateForSQLite(updates.endDate);
+    }
+
     const project = await Project.findByPk(id);
     if (!project) {
       const boomError = boom.notFound("Project not found");

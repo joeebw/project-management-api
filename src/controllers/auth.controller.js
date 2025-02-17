@@ -31,7 +31,7 @@ export const register = async (req, res) => {
     await RefreshToken.create({
       token: refreshToken,
       UserId: user.id,
-      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
     });
 
     res.status(201).json({
@@ -77,7 +77,7 @@ export const signIn = async (req, res) => {
     await RefreshToken.create({
       token: refreshToken,
       UserId: user.id,
-      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
     });
 
     res.status(201).json({
@@ -125,7 +125,7 @@ export const signInGuest = async (req, res) => {
     await RefreshToken.create({
       token: refreshToken,
       UserId: user.id,
-      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
     });
 
     res.status(201).json({

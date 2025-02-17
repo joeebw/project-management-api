@@ -15,12 +15,34 @@ const Project = sequelize.define("Project", {
     type: DataTypes.TEXT,
   },
   startDate: {
-    type: DataTypes.DATE,
+    type: DataTypes.TEXT,
     allowNull: false,
+    get() {
+      return this.getDataValue("startDate")
+        ? new Date(this.getDataValue("startDate"))
+        : null;
+    },
+    set(value) {
+      this.setDataValue(
+        "startDate",
+        value ? new Date(value).toISOString() : null
+      );
+    },
   },
   endDate: {
-    type: DataTypes.DATE,
+    type: DataTypes.TEXT,
     allowNull: false,
+    get() {
+      return this.getDataValue("endDate")
+        ? new Date(this.getDataValue("endDate"))
+        : null;
+    },
+    set(value) {
+      this.setDataValue(
+        "endDate",
+        value ? new Date(value).toISOString() : null
+      );
+    },
   },
 });
 

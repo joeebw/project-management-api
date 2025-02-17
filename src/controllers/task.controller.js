@@ -11,6 +11,7 @@ import {
 } from "../utils/task.util.js";
 import sequelize from "../config/database.js";
 import Project from "../models/Project.js";
+import { formatDateForSQLite } from "../utils/date.util.js";
 
 export const getTasks = async (req, res) => {
   try {
@@ -92,11 +93,9 @@ export const getMyTasks = async (req, res) => {
   try {
     const { id } = req.user;
     const tasks = await Task.findAll({
-      where: {
-        assignees: {
-          [Op.contains]: [id],
-        },
-      },
+      where: sequelize.literal(
+        `json_array_length(assignees) > 0 AND json_extract(assignees, '$') LIKE '%${id}%'`
+      ),
     });
 
     const tasksFormatted = tasks.map((task) => {
@@ -179,18 +178,19 @@ export const createTask = async (req, res) => {
       status,
       priority,
     } = req.body;
-    console.log(normaliceStatusFormatting(status));
+
     const task = await Task.create({
       title,
       description,
-      start_date: startDate,
-      end_date: endDate,
+      start_date: formatDateForSQLite(startDate),
+      end_date: formatDateForSQLite(endDate),
       assignees: assignedUserIds,
       ProjectId: projectId,
       status: normaliceStatusFormatting(status),
       tags: tags,
       priority,
     });
+
     res.status(201).json(task);
     console.log("Task created successfully");
   } catch (error) {

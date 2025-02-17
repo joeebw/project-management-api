@@ -16,34 +16,70 @@ const Task = sequelize.define("Task", {
     type: DataTypes.TEXT,
   },
   start_date: {
-    type: DataTypes.DATE,
-    defaultValue: DataTypes.NOW,
+    type: DataTypes.TEXT,
+    defaultValue: () => new Date().toISOString(),
+    get() {
+      return this.getDataValue("start_date")
+        ? new Date(this.getDataValue("start_date"))
+        : null;
+    },
+    set(value) {
+      this.setDataValue(
+        "start_date",
+        value ? new Date(value).toISOString() : null
+      );
+    },
   },
   end_date: {
-    type: DataTypes.DATE,
+    type: DataTypes.TEXT,
     allowNull: true,
+    get() {
+      return this.getDataValue("end_date")
+        ? new Date(this.getDataValue("end_date"))
+        : null;
+    },
+    set(value) {
+      this.setDataValue(
+        "end_date",
+        value ? new Date(value).toISOString() : null
+      );
+    },
   },
   status: {
-    type: DataTypes.ENUM(
-      "to_do",
-      "work_in_progress",
-      "under_review",
-      "completed"
-    ),
+    type: DataTypes.STRING,
     defaultValue: "to_do",
+    validate: {
+      isIn: [["to_do", "work_in_progress", "under_review", "completed"]],
+    },
   },
   tags: {
-    type: DataTypes.ARRAY(DataTypes.STRING),
-    defaultValue: [],
-    allowNull: true,
+    type: DataTypes.TEXT,
+    defaultValue: "[]",
+    get() {
+      const rawValue = this.getDataValue("tags");
+      return rawValue ? JSON.parse(rawValue) : [];
+    },
+    set(value) {
+      this.setDataValue("tags", JSON.stringify(value));
+    },
   },
   assignees: {
-    type: DataTypes.ARRAY(DataTypes.INTEGER),
-    defaultValue: [],
+    type: DataTypes.TEXT,
+    defaultValue: "[]",
+    get() {
+      const rawValue = this.getDataValue("assignees");
+      return rawValue ? JSON.parse(rawValue) : [];
+    },
+    set(value) {
+      this.setDataValue("assignees", JSON.stringify(value));
+    },
   },
   priority: {
-    type: DataTypes.ENUM("low", "medium", "high"),
+    type: DataTypes.STRING,
     defaultValue: "medium",
+    validate: {
+      isIn: [["low", "medium", "high"]],
+    },
   },
 });
 

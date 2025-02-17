@@ -3,6 +3,11 @@ export const formatDate = (timestamp) => {
   return `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
 };
 
+export const formatDateForProject = (timestamp) => {
+  const date = new Date(timestamp);
+  return `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
+};
+
 export const getFormmatedTasks = (tasks, users) => {
   return tasks.reduce((acc, task) => {
     const statusMap = {

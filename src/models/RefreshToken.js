@@ -14,8 +14,19 @@ const RefreshToken = sequelize.define("RefreshToken", {
     allowNull: false,
   },
   expiresAt: {
-    type: DataTypes.DATE,
+    type: DataTypes.TEXT,
     allowNull: false,
+    get() {
+      return this.getDataValue("expiresAt")
+        ? new Date(this.getDataValue("expiresAt"))
+        : null;
+    },
+    set(value) {
+      this.setDataValue(
+        "expiresAt",
+        value ? new Date(value).toISOString() : null
+      );
+    },
   },
 });
 

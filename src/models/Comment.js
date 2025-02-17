@@ -14,12 +14,12 @@ const Comment = sequelize.define("Comment", {
     allowNull: false,
   },
   createdAt: {
-    type: DataTypes.DATE,
-    defaultValue: DataTypes.NOW,
+    type: DataTypes.TEXT,
+    defaultValue: () => new Date().toISOString(),
   },
   updatedAt: {
-    type: DataTypes.DATE,
-    defaultValue: DataTypes.NOW,
+    type: DataTypes.TEXT,
+    defaultValue: () => new Date().toISOString(),
   },
 });
 
