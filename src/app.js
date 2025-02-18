@@ -6,6 +6,7 @@ import morgan from "morgan";
 import { setupRoutes } from "./routes/index.js";
 import sequelize from "./config/database.js";
 import dotenv from "dotenv";
+import keepAliveService from "./services/keepAlive.js";
 
 dotenv.config();
 const app = express();
@@ -31,6 +32,11 @@ app.use(morgan("dev"));
 // Routes
 setupRoutes(app);
 
+// Keep-alive endpoint
+app.get("/ping", (req, res) => {
+  res.status(200).send("pong");
+});
+
 console.log("process.env.DB_NAME", process.env.DB_NAME);
 
 const startServer = async () => {
@@ -41,8 +47,11 @@ const startServer = async () => {
     await sequelize.sync({ force: false });
     console.log("Synchronized database");
 
-    app.listen(port, () => {
+    const server = app.listen(port, () => {
       console.log(`Server running on port ${port}`);
+
+      const serverUrl = process.env.SERVER_URL || `http://localhost:${port}`;
+      keepAliveService.start(`${serverUrl}/ping`);
     });
   } catch (error) {
     console.error("Error starting server:", error);
